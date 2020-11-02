@@ -10,6 +10,11 @@
 \usepackage{stfloats}
 \usepackage{setspace}
 
+\usepackage{color}
+
+\newcommand{\cxj}[1]{\textcolor{red}{(Cxj: #1)}}
+\newcommand{\nt}[1]{\textcolor{blue}{(#1)}}
+
 %数学命令
 %\input{math-commands.tex}
 
@@ -87,77 +92,85 @@ We conduct experiments and interactive user studies to evaluate our proposed met
 
 \section{Related Work}
 \subsection{Image-to-Image Translation}
-The goal of image-to-image translation task is to convert the input images from one domain to another given the input-output image pairs as training data, in other words, to generate corresponding image according to the input image and meanwhile the two images share the same structure and scene. At present, many researchers employ adversarial manner to train deep neural networks in image-to-image translation tasks\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
+Image-to-image translation aims to convert an input image from one domain to another given the input-output image pairs as training data, in other words, to generate corresponding image according to the input image while the two images share the same scene structure. At present, many researchers employ adversarial manner to train deep neural networks in image-to-image translation tasks~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
 
-The concept of image-to-image translation was first proposed by pix2pix\cite{pix2pix}, which is based on generative adversarial networks conditioned on images. 
-The network architecture of pix2pix is composed of generator $G$ and discriminator $D$, the former is responsible for converting the input image from source domain to target domain, and the latter is responsible for telling the generated images apart from the real images. 
-This model can be applied to a variety of different image translation scenarios, such as lable maps to streetscapes, edge maps to photos, image colorization and so on.
-However, the drawback of pix2pix is also obvious. At most, it can only generate images with a resolution of 256 × 256. 
-If pix2pix is forced to generate images with a higher resolution, the training process will be unstable and the generation quality will decline. 
-Therefore, Ting-Chun Wang et al. proposed a new image-to-image translation model referred to as pix2pixHD\cite{pix2pixhd}, which is based on pix2pix, aiming to improve the resolution of generated images from semantic lable maps. 
-It adopts a coarse-to-fine generator and a multiscale discriminator. 
-And it can also be applied to edge-to-photo generation conditioned on edge map and photo pairs. 
+The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix}, derived from generative adversarial networks while conditioned on images. 
+The pix2pix network consists of a generator $G$ and a discriminator $D$. The generator converts the input image from a source domain to a target domain, and the discriminator tells the generated images apart from real images. 
+This model can be applied to a variety of image translation scenarios, such as lable maps to streetscapes, edge maps to photos, image colorization, and so on.
+However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. 
+When pix2pix is applied to generate images with a higher resolution, the training process will be unstable and the generation quality will decline dramatically.
+In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to images from semantic lable maps by a coarse-to-fine generator and a multiscale discriminator. 
+However, the instance normalization layers used in pix2pixHD tend to wash away semantic information.
+In order to efficiently preserve and propagate semantic information throughout the network, GauGAN~\cite{spade} utilizes semantic segmentation masks to modulate activations in the normalization layers through a spatially-adaptive and learned transformation. 
+%
+These models can also be applied to edge-to-photo generation when conditioned on edge map and photo pairs. 
 However, the large gap between synthesized edge maps and hand-drawn sketches challenges the generalization ability of these models.
-In order to efficiently preserve and propagate semantic information throughout the network, GauGAN\cite{spade} which can effectively turn doodles into reality, utilizes semantic segmentation masks to modulate the activations in normalization layers through a spatially-adaptive, learned transformation. It inspires us to investigate the effect of normalization layers on information propagation in network architecture.
+%
+It inspires us to investigate the effect of normalization layers more deeply on information propagation in the network architecture for sketch-based face image synthesis.
 
 \subsection{Normalization Layers}
-Normalization layers have been an important component in modern deep neural networks for stabilizing the training process. 
-The following are several common normalization methods. 
-Batch normalization\cite{bn} is a method that normalizes activations in a network across the mini-batch. 
+In modern deep neural network, normalization layers play an important role for stabilizing the training process. 
+We introduce several common normalization methods in detail. 
+Batch normalization~\cite{bn} is a method that normalizes activations in a network across the mini-batch. 
 It calculates the mean and variance among one channel over each mini-batch. Then, it learns two parameters to scale and shift the normalized activations.
-Batch Normalization provides a really strong way to reduce internal covariant shift problem and can also stabilize the neural networks to speed up training process.
-Group normalization\cite{gn}, as its name suggests, divides the channels of activations into groups and then calculates the mean and standard deviation over the group of channels of each training sample for normalization, which is frequently adopted in some tasks such as object detection, semantic segmentation and video classification. It helps deep learning model work better at small mini-batch size.
-Layer normalization\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It's more suitable to apply it to recurrent neural networks. Unlike batch normalization, layer normalization performs exactly the same computation at training and test times.
-In fact, instance normalization\cite{instance_norm} is very similar to batch normalization. 
-The only difference is that batch normalization computes the mean and variance among a mimi-batch, while instance normalization operates across only one channel of a single layer. 
-Experimental results show that instance normalization performs well on style transfer\cite{carigan,apdrawinggan,stylization,cartoongan,singlegan,transgaga,harmonic} tasks when replacing batch normalization.
+Batch Normalization provides a strong way to reduce internal covariant shift problem and speed up the training process.
+Group normalization~\cite{gn} divides the channels of activations into groups and then calculates the mean and standard deviation over the channel groups of each training sample for normalization.
+Group normalization is frequently adopted in tasks such as object detection, semantic segmentation, and video classification. It helps deep learning models work better at small mini-batch size.
+Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. 
+Unlike batch normalization, layer normalization performs exactly the same computation at training and test times.
+Instance normalization~\cite{instance_norm} is similar to batch normalization. The only difference is that batch normalization computes the mean and variance among a mimi-batch, while instance normalization operates across only one channel of a single layer. 
+Instance normalization performs well on style transfer~\cite{carigan,apdrawinggan,stylization,cartoongan,singlegan,transgaga,harmonic} tasks when replacing batch normalization.
 
 
-\section{Methods}
-We investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic image generation.
+\section{Feature Embedding Visualization}
+We investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic image generation by designing a set of hand-drawn sketches and visualizing the feature embedding.
 In Sec.~\ref{sec:pix2pixhd}, we review our baseline method pix2pixHD.
-In Sec.~\ref{sec:visualize}, we visualize the feature vectors extrcted from hand-drawn sketches by the generator of pix2pixHD baseline and our model, and analyze the visualization results to investigate the effect of instance normalization.
-In Sec.~\ref{sec:network}, we introduce our improvement on generator network and report the discriminator network. 
+In Sec.~\ref{sec:visualize}, we visualize the feature embedding from hand-drawn sketches by the generator of pix2pixHD, and analyze the visualization results to investigate the effect of instance normalization. 
+Based on the analysis, we introduce our design on the generator network for sketch-based face generation in Sec.~\ref{sec:network}.
 
 \subsection{The pix2pixHD Baseline}\label{sec:pix2pixhd}
-Pix2pixHD\cite{pix2pixhd} is an image translation model based on conditional generative adversarial networks, which can generate high-quality and high-resolution images from input semantic label maps. 
-It adopts an improved adversarial loss, as to the network architecture it introduces a coarse-to-fine generator and a multiscale discriminator. 
-Using this model, a more realistic image with a resolution of 2048 × 1024 can be generated, which is better than the previous method. 
-In addition, the model can also be used for interactive image editing.  
+Pix2pixHD~\cite{pix2pixhd} is an image translation model based on conditional GAN.
+It adopts an improved adversarial loss and the network architecture to generate high-quality and high-resolution images from input semantic label maps. 
+A coarse-to-fine generator and a multiscale discriminator are introduce to increase the image resolution and enhance texture details.
+Using this model, more realistic images in dimension of $2048 \times 1024$ can be generated. 
+%In addition, the model can also be used for interactive image editing.  
 
-Its generator is divided into two sub networks: $G_1$ and $G_2$. 
-$G_1$ is called global generator network, and $G_2$ is called local enhancer network, where $G_1$ is used to generate base image, and $G_2$ is used to improve the resolution of the image. 
-In order to distinguish real and generated images with high resolution, the discriminator needs to have a large receptive field. 
-Therefore, the model uses a multi-scale discriminator which can preserve both global and local information. 
-The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$ and VGG perceptual loss $L_{VGG}(G)$. The full objective is formulated as:
+Its generator $G$ is composed of two sub-networks, a global generator network $G_1$ and a local enhance network $G_2$. 
+$G_1$ is used to generate a base image, then $G_2$ is used to increase the image resolution with texture details. 
+In order to distinguish real and generated images with high resolution, the discriminator requires a larger receptive field. 
+Therefore, pix2pixHD uses a multi-scale discriminator, which is composed of three discriminators $D_1$, $D_2$ and $D_3$ in three scales, to preserve both global and local information. 
+The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$, and VGG perceptual loss $L_{VGG}(G)$. The full objective is formulated as:
 \begin{equation}
 \begin{split}
 	&\underset{G}{\min}\Bigg(\bigg(\underset{D_1,D_2,D_3}{\max} \sum_{k=1,2,3}{L_{GAN}\big(G,D_k\big)}\bigg)+  \\
-	&\lambda \bigg(\frac{1}{3}\sum_{k=1,2,3}{L_{FM}(G,D_k)}+L_{VGG}{\big(G(\boldsymbol{s})\big)}\bigg)\Bigg)~.
+	&\lambda \bigg(\frac{1}{3}\sum_{k=1,2,3}{L_{FM}(G,D_k)}+L_{VGG}{\big(G(\boldsymbol{s})\big)}\bigg)\Bigg),
 \end{split}
 \end{equation}
 \noindent
 where $\lambda$ controls the importance of the three terms.
 
-\subsection{Feature Visualization}\label{sec:visualize}
-We extract the feature vectors of the middle layers of the generator network and utilize data reduction and visualization tool PCA to analyze them comparatively.
+\cxj{Add an image to show pix2pixHD does not support fine-grained control on the synthetic images.}
 
-\noindent
-$\mathbf{Feature ~vector ~extraction}$ In order to verify whether the existing image translation neural network can extract the face shape features consistent with the user's intention for the hand-drawn sketches with little details and geometric deformation, we draw 11 groups of hand-drawn sketches with changes in a specific area in each group. It contains 198 sketches totally of resolution $512\times512$. Fig.~\ref{fig:hand_drawn_contours}~ shows examples of these 11 sets of hand-drawn sketches.  
+The pix2pixHD model can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
+We developed an interactive system to support users to create face images by sketching. 
+However, when an user tries to change the shape of a local part, pix2pixHD tends to change the entire image globally, as shown in Fig.~\ref{fig:problem-in}.
+Therefore, we investigate the network architecture and feature embedding through a comprehensive experiment.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{figures/prob-in-pix2pixHD.png}
+	\caption{Pix2pixHD fails to support fine-grained control on the synthesized images when the input sketch changes locally at the mouth shape.}
+	\label{fig:problem-in}
+\end{figure}
+
+
 \begin{figure*}[htbp]
 	\centering
-	\includegraphics[width=0.9 \textwidth]{hand_drawn_sketches.png}
-	\caption{These sketches can be divided into 11 categories. G1:Add hair; G2:Add new attributes, such as whiskers, wrinkles, ears; G3:Change face shape; G4:Change eyebrows; G5:Change eye shape; G6:changes eye size; G7:Graffiti-drawn; G8:Change mouth; G9:Change nose; G10:Change mouth(same eyes as G9); G11:Change nose(same eyes as G8). Specifically, there is no correlation between G7 and the other 10 categories. Except G7, the sketch in other categories only changes a particular area or attribute while the rest of the sketch remains the same. Except for the same eye between G8 and G11, G9 and G10, the eye lines of other categories of sketches are different.}
+	\includegraphics[width=\textwidth]{hand_drawn_sketches.png}
+	\caption{We collect 11 groups of hand-drawn sketches with specific changes at each group. G1: Add hair; G2: Add new attributes, such as whiskers, wrinkles, and ears; G3: Face shape change; G4: Eyebrow change; G5: Eye shape change; G6: Eye size change; G7: Graffiti-drawn; G8: Mouth shape change; G9: Nose shape change; G10: Change mouth shape with the same eyes as G9; G11: Nose shape change with the same eyes as G8. Specifically, there is no correlation between G7 and the other 10 groups. Except G7, in the sketches of other groups, only a particular area or attribute is modified while the rest sketches in this group remain the same. While sketches in G8 and G11 have the same eyes, sketches in G9 and G10 have the same eyes, the eye shapes in other groups are different.}
 	\label{fig:hand_drawn_contours}
 \end{figure*}
 
-We refer to the first 5 layers of our generator as $L_0,\ldots,L_4$. 
-With the hand-drawn sketch fed into the generator, we get 5 feature maps as output of $L_0$ to $L_4$, and then we extract one full channel feature vector on the left eye corner point of coordinate (170, 250) from each of the 5 feature maps respectively. 
-We call the 5 vectors $\boldsymbol{v}_k,~k=0,\ldots,4$. 
-The coordinates of the corresponding points on the five feature maps are (170, 250), (85, 125), (43, 63), (22, 32) and (11, 16). 
-And the receptive fields of the 5 vectors are $7\times7$, $9\times9$,$13\times13$, $21\times21$ and $37\times37$ as shown in Fig.~\ref{fig:receptive}. 
-The dimensions of these 5 feature vectors are 48, 96, 192, 384 and 768, respectively. 
-We get the 5 feature vectors of pix2pixHD generator called $\boldsymbol{v}_0^{'},\ldots,\boldsymbol{v}_4^{'}$ in the same way.
 \begin{figure}[htbp]
 	\begin{center}
 		%\centering
@@ -167,12 +180,36 @@ We get the 5 feature vectors of pix2pixHD generator called $\boldsymbol{v}_0^{'}
 	\label{fig:receptive}
 \end{figure}
 
-\noindent
-$\mathbf{Visualization ~with ~PCA}$ Principal Component Analysis(PCA)\cite{pca} is a common linear data dimension reduction method, which can better retain the statistic characteristics of data in high dimensional space. 
-We use PCA to perform visualization analysis on $\boldsymbol{v}_0\sim \boldsymbol{v}_4$ after dimension reduction.
+
+
+\subsection{Feature Visualization}\label{sec:visualize}
+
+
+%We extract the feature vectors of the middle layers of the generator network and utilize data reduction and visualization tool PCA to analyze them comparatively.
+
+In order to analyze how the image translation model extracts the face shape features consistent with the user's intention for the hand-drawn sketches that typically have little details and geometric deformation, we collect 11 groups of sketches with changes in a specific area in each group. It contains 198 sketches totally of resolution $512\times512$. Fig.~\ref{fig:hand_drawn_contours} shows some examples of the 11 groups of sketches.  
+
+
+We refer to the first five layers of the generator \cxj{in global generator?} as $L_0,\ldots,L_4$. 
+With a sketch fed into the \nt{generator of pix2pixHD}, five groups of feature maps can be obtained from $L_0$ to $L_4$.
+For each point in a layer, we can extract a $k$-dimensional feature vector, where $k$ is the channel number of the feature maps in a layer.
+We select the corner of the left eye for visual analysis. 
+The five feature vectors are denoted as $\boldsymbol{v}_k,~k=0,\ldots,4$ in dimensions of 48, 96, 192, 384 and 768, respectively. 
+%The coordinates of the corresponding points on the five feature maps are (170, 250), (85, 125), (43, 63), (22, 32) and (11, 16). 
+The receptive fields of the five vectors are $7\times7$, $9\times9$, $13\times13$, $21\times21$, and $37\times37$ respectively on the input sketch, as shown in Fig.~\ref{fig:receptive}. 
+
+\textcolor{blue}{
+We get the five feature vectors of pix2pixHD generator called $\boldsymbol{v}_0^{'},\ldots,\boldsymbol{v}_4^{'}$ in the same way.}
+
+
+\cxj{Show the problem of pix2pixHD first. }
+
+\paragraph{Visualization with PCA.} Principal Component Analysis~(PCA)~\cite{pca} is a widely-used dimension reduction method and retains the statistic characteristics of data in high dimensional space. 
+We employ PCA on $\boldsymbol{v}_0,\ldots, \boldsymbol{v}_4$ to map the high-dimensional vectors into 2D vectors and plot them in a 2D space.
 Fig.~\ref{fig:pca_1}(a) and Fig.~\ref{fig:pca_1}(b) demonstrate the results of PCA visualization on $\boldsymbol{v}_0$ and $\boldsymbol{v}_1$. 
-The corresponding relationship between hand-drawn sketch categories and number colors are: G1 (red), G2 (orange), G3 (lime), G4 (blue), G5 (cyan), G6 (magenta), G7 (maroon), G8 (olive), G9 (green), G10 (purple), G11 (teal). And it is applicable to the following sections.
-It can be seen from the figure that the data of G1, G2, G3 and G4 are distributed at a same point separately, the data of G8 and G11 are gathered on the same point, the data of G9 and G10 are distributed at the same point, whereas the data of G5, G6 and G7 are distributed dispersedly. 
+The corresponding relationship between hand-drawn sketch categories and number colors are: G1 (red), G2 (orange), G3 (lime), G4 (blue), G5 (cyan), G6 (magenta), G7 (maroon), G8 (olive), G9 (green), G10 (purple), and G11 (teal). 
+%
+It can be seen that the data of G1, G2, G3 and G4 are distributed at a same point separately, the data of G8 and G11 are gathered on the same point, the data of G9 and G10 are distributed at the same point, whereas the data of G5, G6 and G7 are distributed dispersedly. 
 This indicates that after the removal of the instance normalization in the first two layers, the features of the left eye corner point are only affected by the contents of the sketch in the corresponding receptive field. The change of the sketch in the receptive field will influence the extracted features of the corresponding points but will not beyond the receptive field.
 \begin{figure}[htb]
 	\centering
@@ -203,7 +240,8 @@ This exactly shows the removal of the first two instance normalization layers in
 \end{figure*}
 
 
-\subsection{Network Architecture}\label{sec:network}
+\section{Our Network Design}\label{sec:network}
+%
 In baseline generator, the activation of convolutional output is normalized in the channel-wise manner and then modulated with unified scale and bias within channel. 
 This operation, to a certain extent, leads to a negative effect that a local change in the input sketch broadcasts globally, thus resulting in a degraded capacity of fine-grained control on generated image.
  
