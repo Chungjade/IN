@@ -149,10 +149,9 @@ The loss function of this model is composed of three parts: adversarial loss $L_
 \end{equation}
 \noindent
 where $\lambda$ controls the importance of the three terms.
+ 
 
-\cxj{Add an image to show pix2pixHD does not support fine-grained control on the synthetic images.}
-
-The pix2pixHD model can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
+Pix2pixHD can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
 We developed an interactive system to support users to create face images by sketching. 
 However, when an user tries to change the shape of a local part, pix2pixHD tends to change the entire image globally, as shown in Fig.~\ref{fig:problem-in}.
 Therefore, we investigate the network architecture and feature embedding through a comprehensive experiment.
@@ -190,9 +189,9 @@ Therefore, we investigate the network architecture and feature embedding through
 
 In order to analyze how the image translation model extracts the face shape features consistent with the user's intention for the hand-drawn sketches that typically have little details and geometric deformation, we collect 11 groups of sketches with changes in a specific area in each group. It contains 198 sketches totally of resolution $512\times512$. Fig.~\ref{fig:hand_drawn_contours} shows some examples of the 11 groups of sketches. And we refer to the 11 groups as $G1,\ldots,G11$.
 
-We refer to the first five layers of the \amend{global generator of pix2pixHD} \cxj{in global generator?} as $L_0,\ldots,L_4$. 
-With a sketch fed into the generator, five groups\amend{why 5 groups?} of feature maps can be obtained from $L_0$ to $L_4$.
-For each point in a layer, we can extract a $k$-dimensional feature vector, where $k$ is the channel number of the feature maps in a layer.
+We refer to the first five layers of the global generator of pix2pixHD as $L_0,\ldots,L_4$. 
+With a sketch fed into the generator, five groups of feature maps can be obtained from $L_0$ to $L_4$.
+For each point in a layer, we can extract a $k$-dimensional feature vector, where $k$ is the channel number of the feature maps in one layer.
 We select the corner of the left eye for visual analysis. 
 The five feature vectors are denoted as $\boldsymbol{v}_0,\boldsymbol{v}_1,\boldsymbol{v}_2,\boldsymbol{v}_3,\boldsymbol{v}_4$ in dimensions of 48, 96, 192, 384 and 768, respectively. 
 %The coordinates of the corresponding points on the five feature maps are (170, 250), (85, 125), (43, 63), (22, 32) and (11, 16). 
@@ -201,23 +200,24 @@ The receptive fields of the five vectors are $7\times7$, $9\times9$, $13\times13
 %\textcolor{blue}{
 %We get the five feature vectors of pix2pixHD generator called $\boldsymbol{v}_0^{'},\ldots,\boldsymbol{v}_4^{'}$ in the same way.}
 
-
-\cxj{Show the problem of pix2pixHD first. }
-
-\paragraph{Visualization with PCA.} Principal Component Analysis~(PCA)~\cite{pca} is a widely-used dimension reduction method and retains the statistic characteristics of data in high dimensional space. 
-We employ PCA on $\boldsymbol{v}_0,\ldots, \boldsymbol{v}_4$ to map the high-dimensional vectors into 2D vectors and plot them in a 2D space.
-\amend{visual analysis on pix2pixHD}
-Fig.~\ref{fig:pca_0}(a)(b)(c)(d)(e) show the visualization results with PCA on $\boldsymbol{v}_0\sim\boldsymbol{v}_4$. 
-The corresponding relationship between hand-drawn sketch categories and number colors are: G1 (red), G2 (orange), G3 (lime), G4 (blue), G5 (cyan), G6 (magenta), G7 (maroon), G8 (olive), G9 (green), G10 (purple), and G11 (teal).
-As we can see, the dimension-reduced data of feature vectors extracted from sketches in G1, G2, G3 and G4 scatter within group among a different area, and the data of G8 and G11 scatter within group among a same area, so do the data of G9 and G10, whereas the data of G5, G6 and G7 dispersed globally.
-This phenomenon indicates that with instance normalization performing over each layer, modification of the sketch outside of corresponding receptive field will influence the feature embedding of each layer in the corner of left eye. 
-By comparing visualization results of $\boldsymbol{v}_0\sim\boldsymbol{v}_4$ comprehensively, we can find out that the feature vectors belonging to groups without modifying eyes such as G1, G2, G3, G4, G8, G9, G10, G11, distribute more and more dispersedly within group, which indicates that with the instance normalization operating layer by layer, changing other parts on the input sketch has more and more obvious influence on the features of the eye position, resulting in an awfully change of eyes in the generated image.
-Consequently, we propose to improve the generator of pix2pixHD aiming for addressing the issue analyzed above. 
+ 
+\paragraph{Visualization with PCA.} Principal component analysis~(PCA)~\cite{pca} is a widely-used dimension reduction method and retains the statistic characteristics of data in high dimensional space. 
+We employ PCA on $\boldsymbol{v}_0,\ldots, \boldsymbol{v}_4$ to map the high-dimensional vectors into 2D vectors and plot them in a 2D space. 
+Fig.~\ref{fig:pca_0} show the visualization results with PCA on $\boldsymbol{v}_0,\ldots,\boldsymbol{v}_4$. 
+%
+In group 1, all the sketches share the same eye shape but with different hair styles. They are supposed to have the same feature embedding for the left eye corner at the early convolutional layers. However, as shown in Fig.~\ref{fig:pca_0}, the feature vectors scatter across a wide range (red numbers). 
+Similarly, though the eye strokes do not change in the sketches of the same group, the feature embedding of G2 (\cxj{color}), G3 (\cxj{color}), and G4 \nt{color} scatter.
+%
+G8 and G11 scatter within group among a same area, so do the data of G9 and G10, whereas the data of G5, G6 and G7 dispersed globally.
+\cxj{It is hard to follow here.}
+This phenomenon indicates that the instance normalization in each layer takes the sketch information outside of its corresponding receptive field into account and then affects the feature embedding of a local region. 
+By comparing visualization results of $\boldsymbol{v}_0\sim\boldsymbol{v}_4$ comprehensively, we find out that the feature vectors belonging to the groups without eye changes, such as G1, G2, G3, G4, G8, G9, G10, and G11, distribute more and more dispersedly within each group from layer 1 to layer 4, indicating that with more instance normalization, changing other parts on the input sketch has more and more influence on the loal feature embedding, resulting in an awful change of eyes in the generated images.
+Consequently, we modify the normalization in the generator of pix2pixHD to keep local shape details. 
 
 \begin{figure*}[htb]
 	\centering
 	\includegraphics[width=0.9 \textwidth]{pca_0.png}
-	\caption{Results of PCA visualization on $\boldsymbol{v}_0\sim\boldsymbol{v}_4$}
+	\caption{Visualization of feature embedding $\boldsymbol{v}_0\sim\boldsymbol{v}_4$ in the first five layers of the global generator of pix2pixHD for the left eye corner for 11 groups of sketches.  }
 	\label{fig:pca_0}
 \end{figure*}      
 
@@ -225,36 +225,37 @@ Consequently, we propose to improve the generator of pix2pixHD aiming for addres
 
 \section{Our Network Design}\label{sec:network}
 %
-In baseline generator, the activation of convolutional output is normalized in the channel-wise manner and then modulated with unified scale and bias within channel. 
-This operation, to a certain extent, leads to a negative effect that a local change in the input sketch broadcasts globally, thus resulting in a degraded capacity of fine-grained control on generated image.
- However, the vanishing gradient or exploding gradient problem is bound to emerge when the instance normalization layers in feature extraction stage of the generator network is abandoned too much, which makes the training process difficult to converge. 
+With instance normalization in the baseline generator, the activation of convolutional output is normalized in a channel-wise manner and then modulated with unified scale and bias within each channel. 
+This operation, to a certain extent, leads to a negative effect that a local change in the input sketch broadcasts globally, resulting in a degraded capacity of fine-grained control on the generated images.
+However, the vanishing gradient or exploding gradient problem is bound to emerge when the instance normalization layers in the feature embedding stage of the generator is abandoned, making the training process difficult to converge. 
  
-Based on the consideration above, we remove the first two instance normalization layers in the global generator of pix2pixHD baseline and take the rest as our own generator. 
-The architecture of our generator is shown in Fig.\ref{fig:our_generator}. It operates at a resolution of 512×512. 
+Based on the consideration above, we only remove the first two instance normalization layers in the global generator of pix2pixHD and keep the rest the same as pix2pixHD. 
+The architecture of our generator is shown in Fig.~\ref{fig:our_generator}. 
+%It operates at a resolution of 512×512. 
 It consists of four components: a convolutional front-end without normalization $G_1^{(F)}$, a down-sampled convolutional mid-end $G_1^{(M)}$, a set of residual blocks $G_1^{(R)}$ and a transposed convolutional back-end $G_1^{(B)}$. 
-$G_1^{(F)}$ composed of two unnormalized convolution and activation layers can remain underlying information of input sketches locally, in other words, semantic information can flows through the network without spatially broadcasting. 
-Hence efficient fine-grained control on generated images can be conduct. 
+\cxj{mark in the figure with the same symbols.}
+$G_1^{(F)}$, which is composed of two unnormalized convolution and activation layers,  embeds local shape information of input sketches locally.
+In other words, the local shape of the sketch can flow through the network without spatially broadcasting, thus effectively supports fine-grained control on generated images. 
 
-\begin{figure*}[htbp]
+\begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8 \textwidth]{our_model_G.png}
+	\includegraphics[width=\columnwidth]{our_model_G.png}
 	\caption{Network architecture of our generator. }
 	\label{fig:our_generator}
-\end{figure*}
+\end{figure}
 
-The discriminator applys the multi-scale design consistent with pix2pixHD. 
-There are three discriminators that have an identical network structure but operate at different image scales. 
-In addition, each discriminator is built on PatchGAN\cite{pix2pix} architecture proposed by Isola Phillip \textit{et al.}. Sketches at different scales are concatenated with corresponding face images, and fed into the discriminators, respectively. 
-
-\amend{visual analysis of our model}
-
-To evaluate the superiority of our proposed method at the level of feature embedding, we make a visual analysis on our networks with PCA.
-We first get five feature vectors of the first five layers of our designed generator in the same way as described in Sec.~\ref{sec:visualize}. 
-We refer to the five feature vectors as $\boldsymbol{v}_0^{'},\boldsymbol{v}_1^{'},\boldsymbol{v}_2^{'},\boldsymbol{v}_3^{'},\boldsymbol{v}_4^{'}$.
+We use the same three-scale discriminator with pix2pixHD. 
+Each discriminator is built on the PatchGAN~\cite{pix2pix} architecture. 
+At each scale, the input sketch is concatenated with the corresponding face images, resized and fed into the corresponding discriminator.
+ 
+ 
+To evaluate the superiority of our proposed method at the level of feature embedding, we conducted the visual analysis in the same way described in Sec.~\ref{sec:visualize}.
+%
+We refer to the five feature vectors in our generator as $\boldsymbol{v}_0^{'},\boldsymbol{v}_1^{'},\boldsymbol{v}_2^{'},\boldsymbol{v}_3^{'},\boldsymbol{v}_4^{'}$.
 %
 Fig.~\ref{fig:pca_1}(a) and Fig.~\ref{fig:pca_1}(b) demonstrate the results of PCA visualization on $\boldsymbol{v}_0^{'}$ and $\boldsymbol{v}_1^{'}$. 
-It can be seen that the data of G1, G2, G3 and G4 are distributed at a same point separately, the data of G8 and G11 are gathered on the same point, the data of G9 and G10 are distributed at the same point, on the contrary, the data of G5, G6 and G7 are distributed dispersedly over the drawing space. 
-This indicates that after the removal of the instance normalization in the first two layers of generator, the features of the left eye corner are only affected by the contents of the sketch inside of the corresponding receptive field. The change of the sketch in the receptive field will influence the extracted features of the corresponding point but will not outside of the receptive field.
+It can be seen that the features of G1, G2, G3 and G4 are distributed at the same point separately, the data of G8 and G11 are gathered on the same point, the features of G9 and G10 are distributed at the same point, on the contrary, the data of G5, G6 and G7 are distributed dispersedly over the drawing space. 
+This indicates that after the removal of instance normalization in the first two layers of generator, the feature embedding of the left eye corner conforms with the local shape of the input sketches inside of the corresponding receptive fields. The sketch change in the receptive field will influence the embedded features of the corresponding point but not outside of the receptive field.
 
 \begin{figure}[htb]
 	\centering
@@ -273,7 +274,7 @@ This indicates that after the removal of the instance normalization in the first
 %\end{figure*}
 %By comparing visualization results of $\boldsymbol{v}_2$ and $\boldsymbol{v}_4$, we can find out that the feature vectors belonging to categories with unmodified eyes such as G1, G2, G3, G4, G8, G9, G10, G11, distribute more and more dispersedly within class, which indicates that with the instance normalization operating layer by layer, changing other parts on the input sketch has more and more obvious influence on the features of the eye position, leading to the change of eyes in the generated image.
 
-Then we contrast the PCA visualization results of $\boldsymbol{v}_2\sim\boldsymbol{v}_4$ and $\boldsymbol{v}_2^{'}\sim\boldsymbol{v}_4^{'}$ respectively. 
+Then we compare the PCA visualization results of $\boldsymbol{v}_2\sim\boldsymbol{v}_4$ and $\boldsymbol{v}_2^{'}\sim\boldsymbol{v}_4^{'}$ respectively. 
 Fig.\ref{fig:pca_4}(a)(b)(c) illustrate the visualization results of $\boldsymbol{v}_2^{'}\sim\boldsymbol{v}_4^{'}$, and Fig.\ref{fig:pca_4}(d)(e)(f) illustrate the visualization results of $\boldsymbol{v}_2\sim\boldsymbol{v}_4$. 
 The $\boldsymbol{v}_2, \boldsymbol{v}_3, \boldsymbol{v}_4$ belonging to groups without modifying eyes such as G1, G2, G3, G4, G8, G9, G10, G11, have a bigger in-class distance compared with $\boldsymbol{v}_2^{'}, \boldsymbol{v}_3^{'}, \boldsymbol{v}_4^{'}$. 
 This observation exactly demonstrates the removal of the first two instance normalization layers in pix2pixHD generator can better extract the low-level features of the input sketch. 
@@ -286,14 +287,16 @@ The improvement on generator network can effectively alleviate the issue that ch
 \end{figure*}
 
 
-\section{Experiments}
-We conduct extensive experiments to evaluate our proposed method.
-In Sec.~\ref{sec:datasets}, we introduce how to produce our training and testing datasets(). 
-In Sec.~\ref{sec:augmentation}, we introduce the method of data augmentation aiming to alleviate the issue that the generated image has poor tolerance to the spatial position change of the input sketches. And we show the generation results of the model trained with augmented data. 
-In Sec.~\ref{sec:results}, we conduct comparative experiments on hand-drawn sketches between our methods and pix2pixHD baseline. We show that our method achieves a better fine-grained control on generated images.
+\section{Experiments on Sketch-to-Image}
+We conduct extensive experiments to evaluate our proposed method on sketch-based face image generation.
 
-\subsection{Datasets}\label{sec:datasets} 
-CelebA-HQ dataset contains more than 30,000 face images generated by PGGAN\cite{pggan} of resolution 1024×1024. Since the images are cropped according to face landmarks, each image is global aligned. 
+
+%In Sec.~\ref{sec:datasets}, we introduce how to produce our training and testing datasets(). 
+%In Sec.~\ref{sec:augmentation}, we introduce the method of data augmentation aiming to alleviate the issue that the generated image has poor tolerance to the spatial position change of the input sketches. And we show the generation results of the model trained with augmented data. 
+%In Sec.~\ref{sec:results}, we conduct comparative experiments on hand-drawn sketches between our methods and pix2pixHD baseline. We show that our method achieves a better fine-grained control on generated images.
+
+\paragraph{Datasets.}
+\nt{CelebA-HQ dataset contains more than 30,000 face images generated by PGGAN~\cite{pggan} of resolution 1024×1024. } Since the images are cropped according to face landmarks, each image is global aligned.
 We extracted 68 landmarks from the face images in the CelebA-HQ dataset, and then connected these points in sequence with a line of pixel 2 to form the contour. As the face photos in Celeba-HQ dataset are global aligned, so are the contours. Contour is more simple and clean than other types of sketch like edge maps\cite{csagan} and mask edge maps\cite{maskgan}, so it is more suitble to imitate human hand-drawn sketch. Therefore, it is more reasonable to use contour as training data.
 For the purpose of the experiment, we scaled the picture of resolution 512×512. After selection, the training set contains 14,973 pairs of contour and face photos, while the test set contains 4,992 pairs of contour and face photos. 
 In order to evaluate the generalization ability of our model on the hand-drawn sketches, we develop an interactive interface for drawing sketches and displaying the generated photos in real time.
