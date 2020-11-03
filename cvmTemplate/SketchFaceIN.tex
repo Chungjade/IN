@@ -238,9 +238,8 @@ However, the vanishing gradient or exploding gradient problem is bound to emerge
 Based on the consideration above, we only remove the first two instance normalization layers in the global generator of pix2pixHD and keep the rest the same as pix2pixHD. 
 The architecture of our generator is shown in Fig.~\ref{fig:our_generator}. 
 %It operates at a resolution of 512×512. 
-It consists of four components: a convolutional front-end without normalization $G_F$, a down-sampled convolutional mid-end $G_M$, a set of residual blocks $G_R$ and a transposed convolutional back-end $G_B$. 
-\cxj{mark in the figure with the same symbols.}
-$G_F$, which is composed of two unnormalized convolution and activation layers,  embeds local shape information of input sketches locally.
+It consists of four components: a convolutional front-end without normalization $G_F$, a down-sampled convolutional mid-end $G_M$, a set of residual blocks $G_R$, and a transposed convolutional back-end $G_B$.  
+$G_F$, which is composed of two unnormalized convolution and activation layers, embeds local shape information of the input sketch.
 In other words, the local shape information of the sketch can flow through the network without spatially broadcasting, thus effectively supports fine-grained control on generated images. 
 
 \begin{figure}[htbp]
@@ -255,14 +254,13 @@ Each discriminator is built on the PatchGAN~\cite{pix2pix} architecture.
 At each scale, the input sketch is concatenated with the corresponding face images, resized and fed into the corresponding discriminator.
  
  
-To evaluate the superiority of our proposed method at the level of feature embedding, we conducted the visual analysis in the same way described in Sec.~\ref{sec:visualize}.
-%
+To evaluate the superiority of our proposed method at the level of feature embedding, we conducted the visual analysis in the same way as described in Sec.~\ref{sec:visualize}.
 We refer to the five feature vectors in our generator as $\boldsymbol{v}_0^{'},\boldsymbol{v}_1^{'},\boldsymbol{v}_2^{'},\boldsymbol{v}_3^{'},\boldsymbol{v}_4^{'}$.
 %
 Fig.~\ref{fig:pca_1} (a) and Fig.~\ref{fig:pca_1} (b) demonstrate the results of PCA visualization on $\boldsymbol{v}_0^{'}$ and $\boldsymbol{v}_1^{'}$. 
-It can be seen that the feature vectors of G1, G2, G3 and G4 are distributed at the same point separately, the feature vectors of G8 and G11 are gathered on the same point, the feature vectors of G9 and G10 are distributed at the same point too, on the contrary, the feature vectors of G5, G6 and G7 are distributed dispersedly over the drawing space. 
-This indicates that after the removal of instance normalization in the first two layers of generator, the feature embedding of the left eye corner conforms with the local shape of the input sketches inside of the corresponding receptive fields. 
-The sketch change in the receptive field will influence the embedded features of the corresponding point but not outside of the receptive field.
+The feature vectors from G1, G2, G3, and G4 are located at the same point in each group. The feature vectors from G8 and G11 are gathered on the same point since these two groups share the same eye shape, so do the feature vectors from G9 and G10.
+On the contrary, the feature vectors from G5, G6, and G7 distribute dispersedly, indicating that after the removal of instance normalization in the first two layers of generator, the feature embedding of the left eye corner conforms with the local shape of the input sketches inside of the corresponding receptive fields. 
+The sketch change within the receptive field will influence the embedded features of the corresponding point but not outside of the receptive field.
 
 %\begin{figure*}[htb]
 %	\centering
@@ -271,57 +269,62 @@ The sketch change in the receptive field will influence the embedded features of
 %	\label{fig:pca_1}
 %\end{figure*}
 
-Then we compare the PCA visualization results of $\boldsymbol{v}_2\sim\boldsymbol{v}_4$ and $\boldsymbol{v}_2^{'}\sim\boldsymbol{v}_4^{'}$ respectively.
-% 
-Fig.~\ref{fig:pca_1} (c) (d) (e) illustrate the visualization results of $\boldsymbol{v}_2^{'}\sim\boldsymbol{v}_4^{'}$, while Fig.~\ref{fig:pca_0} (c) (d) (e) illustrate the visualization results of $\boldsymbol{v}_2\sim\boldsymbol{v}_4$. 
-The $\boldsymbol{v}_2, \boldsymbol{v}_3, \boldsymbol{v}_4$ belonging to groups without eye changes such as G1, G2, G3, G4, G8, G9, G10, G11, have a bigger in-class distance compared with $\boldsymbol{v}_2^{'}, \boldsymbol{v}_3^{'}, \boldsymbol{v}_4^{'}$. 
-This observation exactly demonstrates the removal of the first two instance normalization layers in pix2pixHD generator can better extract the low-level features of the input sketch. 
-The improvement on generator network can effectively alleviate the issue that changing one part of the sketch influence the other parts of the generated image. So our designed network can suport fine-grained control on the generated images and enhance texture details generation.
+We visualize the feature embedding of $\boldsymbol{v}_2^{'},\boldsymbol{v}^{'}_3, \boldsymbol{v}_4^{'}$ in 
+Fig.~\ref{fig:pca_1} (c) (d) (e). 
+
+Compare with the PCA visualization results of $\boldsymbol{v}_2,\boldsymbol{v}_3,\boldsymbol{v}_4$ in 
+Fig.~\ref{fig:pca_0} (c) (d) (e), the $\boldsymbol{v}_2, \boldsymbol{v}_3, \boldsymbol{v}_4$ belonging to groups without eye shape change, such as G1, G2, G3, G4, G8, G9, G10, and G11, have a bigger in-class distance compared with $\boldsymbol{v}_2^{'}, \boldsymbol{v}_3^{'}, \boldsymbol{v}_4^{'}$. 
+This indicates that the removal of the first two instance normalization layers in pix2pixHD generator can better extract the low-level features of the input sketch and keep local shape information. 
+The improvement on generator network can effectively alleviate the issue that changing one part of the sketch influences the other parts of the generated image. 
+Therefore, our network better supports fine-grained control and enhances texture details on the generated images.
 
 
-\section{Experiments on Sketch-to-Image}
-We conduct extensive experiments to evaluate our proposed method on sketch-based face image generation.
+\section{Experiments on Sketch-based Face Generation}
+
+To evaluate the effectiveness of our method on interactive face synthesis by sketching, we conducted extensive experiments with a wide range of handdrawn sketches and local editing. 
+We develop an interactive interface for drawing sketches and displaying the generated photos in real time.
+
+
 %In Sec.~\ref{sec:datasets}, we introduce how to produce our training and testing datasets(). 
 %In Sec.~\ref{sec:augmentation}, we introduce the method of data augmentation aiming to alleviate the issue that the generated image has poor tolerance to the spatial position change of the input sketches. And we show the generation results of the model trained with augmented data. 
 %In Sec.~\ref{sec:results}, we conduct comparative experiments on hand-drawn sketches between our methods and pix2pixHD baseline. We show that our method achieves a better fine-grained control on generated images.
 
 \paragraph{Datasets.}
-\nt{CelebA-HQ dataset contains more than 30,000 face images generated by PGGAN~\cite{pggan} of resolution $1024\times1024$. } Since the images are cropped according to face landmarks, each image is global aligned.
-We extracted 68 landmarks from the face images in the CelebA-HQ dataset, and then connected these points in sequence with a line of pixel 2 to form the contours. 
-As the face photos in Celeba-HQ dataset are global aligned, so are the contours. Contour is more simple and clean than other types of sketch like edge maps\cite{csagan} and mask edge maps\cite{maskgan}, so it is more suitble to imitate human hand-drawn sketches. 
-Therefore, it is more reasonable to use contour as training data.
-For the purpose of the experiment, we scaled the picture of resolution $512\times512$. 
-After selection, the training set contains 14,973 pairs of contour and face photo, while the test set contains 4,992 pairs of contour and face photo. 
-In order to evaluate the generalization ability of our model on the hand-drawn sketches, we develop an interactive interface for drawing sketches and displaying the generated photos in real time.
+CelebA-HQ dataset contains more than 30,000 face images in resolution $1024\times1024$. All the face images are cropped and globally aligned according to face landmarks.
+To produce paired training data of sketches and face images, we extracted 68 landmarks from each face image in the CelebA-HQ dataset, connect these landmark points in sequence, and draw lines in width of two pixels to synthesize contours as sketches.
+%As the face photos in Celeba-HQ dataset are global aligned, so are the contours.
+Those contours are more simple and clean than other types of synthetic sketches like edge maps~\cite{csagan} and mask edge maps~\cite{maskgan}. 
+In our experiments, all the synthetic contour images and face images are resized into $512\times512$. 
+After \nt{removing the photos for which landmark extraction fails}, the training set contains 14,973 pairs of contour image and face photo, while the test set contains 4,992 pairs of contour and face photo. 
 
 \subsection{Data Augmentation}\label{sec:augmentation} 
-Since the face photos of the CalebA-HQ dataset are cropped with the reference of facial landmarks, and our training data contours are also obtained based on facial landmarks, we intuitively believe that all the facial landmarks of the training data have spatial consistency. 
-To verify the hypothesis above, we calculate the average face of all the training data, as shown in Fig.\ref{fig:average_face}. 
-We find that the facial features and facial contours of training data are basically in the same position, in other words, the training data is global aligned. 
+The face photos of the CalebA-HQ dataset are precisely aligned based on facial landmarks. Fig.~\ref{fig:average_face} shows an average face of all the synthesized contours. 
+It shows that the facial features and facial contours of training data are basically in the same position, in other words, the training data is global aligned. 
 This issue leads to degraded generalization ability of the model.
  
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.18 \textwidth]{average_face.png}
-	\caption{The average face of all the training data. }
+	\caption{The average face of all the synthesized contours from the face photos. }
 	\label{fig:average_face}
 \end{figure}
 
-In order to imitate the human hand-drawn sketches, we apply random translation and rotation to the training contours. 
-Specifically, offsets randomly selected from $[-d,d]^2$ and angles randomly selected from $[-\theta,\theta]$ are added to the training contours, where $d$ is the maximum offset and $\theta$ is the maximum angle and we set $d=25$, $\theta=7^\circ$ in our experiments. 
-But face photos are not translated or rotated because we expect the generated images to remain global aligned regardless of the spatial location of the input sketches.
+In order to imitate the human hand-drawn sketches, we apply random translation and rotation to the training contour images. 
+Specifically, offsets randomly selected from $[-d,d]^2$ and angles randomly selected from $[-\theta,\theta]$ are applied to the training contours, where $d$ is the maximum offset and $\theta$ is the maximum angle.
+We set $d=25$ and $\theta=7^\circ$ in our experiments. 
+However, the training face photos are not translated or rotated because we expect the generated images to remain global aligned regardless of the spatial location of the input sketches.
 Fig.~\ref{fig:data_augmentation} illustrates the comparative results between images generated before data augmentation and that after data augmentation. 
-The quality of generated images after data augmentation is better than that before data augmentation when the input sketches deviate from training data spatially.
+The quality of generated images after data augmentation is greatly improved compared with those results without data augmentation when the input sketches deviate from the training examples spatially.
 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.35 \textwidth]{data_augmentation.png}
-	\caption{Comparison between images generated before and after data augmentation. }
+	\caption{Comparison between images generated \nt{with and without} data augmentation. }
 	\label{fig:data_augmentation}
 \end{figure}
 
 
-\subsection{Qualitatively Comparisons}\label{sec:results}
+\subsection{Qualitative Comparisons}\label{sec:results}
 As you can see in Fig.~\ref{fig:ablation}, our model generates the most photorealistic images in contrast to the $M_2$ model producing images with lowest sense of reality. It indicates that removing too many instance normalization layers in generator can weaken the model because training process is difficult to converge without normalization.
 \begin{figure}[htb]
 	\centering
@@ -336,18 +339,18 @@ In contrast, our results are more realistic with fine texture details.
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.45 \textwidth]{texture.png}
-	\caption{Magnified details of images generated by our model and baseline model. The top row shows that the textures of teeth generated by pix2pixHD baseline are blurry, while our results have clear textures of teeth. The bottom row shows that some chaotic noises often emerge in the forehead of images generated by pix2pixHD baseline, but our results do not have this issue.}
+	\caption{Face images generated by our model and the baseline model with different mouth shape. The top row shows that the textures of teeth generated by pix2pixHD baseline are blurry, while our results have more realistic textures at the teeth area. The bottom row shows that some chaotic noises often emerge in the forehead area of the image generated by pix2pixHD baseline because the strokes of the mouth affect the other regions during feature embedding. In comparison, our model produces more globally realistic results.}
 	\label{fig:compare_1}
 \end{figure}
 
-Our model can achieve fine-grained control on generated images, whereas baseline model cannot. 
-When we modify the lines of face attributes or face contours of input freehand sketches, the corresponding parts of images generated by our model change consistently but other areas remain unchanged. 
-In comparison, modifying local strokes of sketches influences not only the content in corresponding areas of images generated by baseline model but also the content in other areas. 
+Our model can achieve fine-grained control on generated images. 
+When we modify the strokes to represent different face attributes or change the overall face shapes in the input freehand sketches, the corresponding parts of images generated by our model change consistently while other areas remain unchanged. 
+In comparison, using the baseline pix2pixHD model, modifying local strokes of sketches influences not only the content in corresponding areas but also the content in other areas in the generated images. 
 Fig.~\ref{fig:compare_2} and Fig.~\ref{fig:compare_3}~ show several face images generated by our model and baseline model when changing lines of mouth and nose separately in sketches.
-The results shown in row 1, 2 of Fig.~\ref{fig:compare_2} demonstrate that the images generated by our model change obviously in mouth shape and preserve structure conformance with input sketches when modifying the lines of mouth in sketches. 
+The results shown in first and second row of Fig.~\ref{fig:compare_2} demonstrate that the images generated by our model change obviously in mouth shape and preserve structure conformance with input sketches when modifying the lines of mouth in sketches. 
 But the results generated by baseline model do not have an obvious change in mouth shape.
 The results shown in Fig.~\ref{fig:compare_3} illustrate that the images generated by our model remain unchanged in other areas especially in eyes when altering the shapes of nose in sketches, but the images generated by baseline model change obviously in eyes direction. 
-And as shown in row 3 of Fig.~\ref{fig:compare_2}, the generation results of our model do not change except the mouth when modifying the mouth shape in sketches, while the generation quality of baseline model is degraded vastly especially in the eye area. 
+And as shown in the third row of Fig.~\ref{fig:compare_2}, the generation results of our model do not change except the mouth when modifying the mouth shape in sketches, while the generation quality of baseline model is degraded vastly especially in the eye area. 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=0.4 \textwidth]{mouth_editing.png}
@@ -363,10 +366,13 @@ And as shown in row 3 of Fig.~\ref{fig:compare_2}, the generation results of our
 \end{figure}
 
 \section{Conclusion}
-In this paper, we utilize PCA, a dimension reduction approach to visually analyze the feature embedding for sketches with a group of specific changes.  
-Then we improve the baseline image translation model by modifying the instance normalization layers in its generator. 
-We further evaluate our networks on the level of feature embedding using PCA visual analysis.
-Extensive experiments demomngstrate the effectiveness of our proposed simple modification in the generator architecture on making a significant improvement of the image generation quality and conformance with user intention.  
+In this paper, we investigate the feature embedding in state-of-the-art image translation model on the sketch-based face image generation task.
+We collect 11 groups of sketches with specific designs and utilize PCA to visually analyze the feature embedding for sketches.
+The analysis indicates that the instance normalization tends to wash away the local shape information in the input sketches.
+We improve the baseline image translation model by modifying the instance normalization layers in its generator.
+The modified model effectively conveys find-grained shape information through the image translation model and produces photorealistic face images that conforms with the input sketches on both local shape and global structure.
+Extensive experiments demonstrate the effectiveness of our proposed method on the image quality and conformance with user intention in an
+sketch-based face image generation system.  
 
 
 %\section{About the paper submission}
