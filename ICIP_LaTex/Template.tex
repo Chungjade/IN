@@ -4,6 +4,10 @@
 % --------------------------------------------------------------------------
 \documentclass{article}
 \usepackage{spconf,amsmath,graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\newcommand{\dlt}[1]{{}}
 
 % Example definitions.
 % --------------------
@@ -16,7 +20,7 @@
 %
 % Single address.
 % ---------------
-\name{Zhihua Cheng, Xuejin Chen, Binxin Yang, Zihan Chen}
+\name{Zhihua Cheng, Binxin Yang, Zihan Chen, Xuejin Chen}
 \address{University of Science and Technology of China, China}
 %
 % For example:
@@ -52,43 +56,20 @@ In this paper, we comprehensively investigate the effect of instance normalizati
 We first introduce a visualization approach to analyze the feature embedding for sketches with a group of specific changes.  
 Based on the visual analysis, we modify the instance normalization layers in the baseline image translation model. 
 We elaborate a new set of hand-drawn sketches with 11 categories of specially designed changes and conduct extensive experimental analysis.  
-The results and user studies demonstrate that our method markedly improve the quality of synthesized images and the conformance with user intention.
+The results and user studies demonstrate that our method markedly improves the quality of synthesized images and the conformance with user intention.
 \end{abstract}
 %
 \begin{keywords}
-Sketch-based, face image generation, Instance normalization, fine-grained control, generative adversarial networks
+Sketch, face generation, instance normalization, fine-grained control, GAN
 \end{keywords}
 %
 \section{Introduction}
 \label{sec:intro}
 
-Photorealistic face image synthesis from hand-drawn sketches has drawn a lot of attention in computer graphics and computer vision for many years. Typical approaches use generative and adversarial networks~(GANs)~\cite{gan}, that  stack convolutional, normalization and nonlinearity layers as generators. Normalization layers normalize the parameter distribution in order to alleviate the issue of slow convergence in gradient update process and avoid vanishing gradient and exploding gradient problem, which is vastly important in GANs.
-
-Many normalization layers have been developed in recent GANs for various goals, such as batch normalization~\cite{bn}, group normalization~\cite{gn}, layer normalization~\cite{ln} and instance normalization~\cite{instance_norm}. 
-Batch normalization~\cite{bn} eliminates the influence of internal covariate shift, effectively avoids the possible problems of gradient vanishing and gradient exploding in the process of gradient backpropagation, and speeds up the training time. 
-Group normalization~\cite{gn} organizes the channels of a layer into different groups, and computes the mean and standard deviation within each group independently for normalization. It is independent of batch size, thus it is frequently used in tasks which prefers small mini-batch size, such as object detection and video classification.
-Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. Unlike batch normalization, layer normalization~\cite{instance_norm} performs exactly the same computation at training and test times.
-
-Instance normalization is similar to layer normalization but goes one step further. It computes the mean and variance for normalization over \emph{each} channel in \emph{each} training example.
-Recent studies show that instance normalization performs well on visual tasks such as style transfer and image translation~\cite{pix2pixhd,spade,cyclegan} when replacing batch normalization in GANs architecture. 
-Nonetheless, instance normalization layers tend to wash away detailed information conveyed by the input sketches, thus it results in descent of the feature expression ability and imprecise control on face generation. 
-
-It is essential to support fine-grained control in sketch-based content creation. 
-We comprehensively investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic face image generation using data visualization methods. 
-We utilize principal component analysis (PCA)~\cite{pca} to visualize and analyze features extracted by the generator from sketches. 
-Consequently, we propose to remove the first two instance normalization layers in the baseline generator, and show that this simple modification in the generator results in a significant improvement on control accuracy in image generation. 
-We conduct extensive experiments and interactive user studies to evaluate our proposed method, and the results demonstrate that our method surpasses the baseline method on image quality and control precision on the sketch-to-image task.
-
-\section{Related Work}
-\subsection{Image-to-Image Translation}
-Image-to-image translation aims to convert an input image from one domain to another given the input-output image pairs as training data, in other words, to generate corresponding image according to the input image while the two images share the same scene structure. At present, many researchers employ adversarial manner to train deep neural networks in image-to-image translation tasks~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
-
-The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix}, derived from generative adversarial networks while conditioned on images. 
-The pix2pix network consists of a generator $G$ and a discriminator $D$. The generator converts the input image from a source domain to a target domain, and the discriminator tells the generated images apart from real images. 
-This model can be applied to a variety of image translation scenarios, such as lable maps to streetscapes, edge maps to photos, image colorization, and so on.
-However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. 
-When pix2pix is applied to generate images with a higher resolution, the training process will be unstable and the generation quality will decline dramatically.
-In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to generate images from semantic lable maps by a coarse-to-fine generator and a multiscale discriminator. 
+Photorealistic face image synthesis from hand-drawn sketches has drawn a lot of attention in computer graphics and computer vision recently. Typical approaches use generative and adversarial networks~(GANs)~\cite{gan}. 
+Considering hand-drawn sketches as one specific type of images, generating face images from sketches can be formulated as an image-to-image translation problem, which generates corresponding image in one domain according to the input image in another domain while the two images share the same structure~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
+The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix}, derived from generative adversarial networks while conditioned on images. This model can be applied to a variety of image translation scenarios, such as lable maps to streetscapes, edge maps to photos, image colorization, and so on.
+However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to generate images from semantic lable maps by a coarse-to-fine generator and a multiscale discriminator. 
 However, the instance normalization layers used in pix2pixHD tend to wash away semantic information.
 In order to efficiently preserve and propagate semantic information throughout the network, GauGAN~\cite{spade} utilizes semantic segmentation masks to modulate activations in the normalization layers through a spatially-adaptive and learned transformation. 
 %
@@ -97,36 +78,37 @@ However, the large gap between synthesized edge maps and hand-drawn sketches cha
 %
 It inspires us to investigate the effect of normalization layers more deeply on information propagation in the network architecture for sketch-based face image synthesis.
 
-\subsection{Normalization Layers}
-In current deep neural networks, normalization layers play an important role for stabilizing the training process. 
-We introduce several common normalization methods in detail. 
-Batch normalization~\cite{bn} is a method that normalizes activations in a network across the mini-batch. 
-It calculates the mean and variance among one channel over each mini-batch. Then, it learns two parameters to scale and shift the normalized activations.
-Batch Normalization provides a strong way to reduce internal covariant shift problem and speed up the training process.
-Group normalization~\cite{gn} divides the channels of activations into groups and then calculates the mean and standard deviation over the channel groups of each training sample for normalization.
-Group normalization is frequently adopted in tasks such as object detection, semantic segmentation and video classification. It helps deep learning models work better at small mini-batch size.
-Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. 
-Unlike batch normalization, layer normalization performs exactly the same computation at training and test times.
-Instance normalization~\cite{instance_norm} is similar to batch normalization. The only difference is that batch normalization computes the mean and variance among a mimi-batch, while instance normalization operates across only one channel of a single layer. 
-Instance normalization performs well on style transfer~\cite{carigan,apdrawinggan,stylization,cartoongan,singlegan,transgaga,harmonic} tasks when replacing batch normalization in GANs.
+
+In various GANs, normalization layers play an important role for stabilizing the training process. Many normalization layers have been developed, such as batch normalization~\cite{bn}, group normalization~\cite{gn}, layer normalization~\cite{ln}, and instance normalization~\cite{instance_norm}. 
+Batch normalization~\cite{bn} eliminates the influence of internal covariate shift and effectively speeds up the training time. 
+Group normalization~\cite{gn} organizes the channels of a layer into different groups, and computes the mean and standard deviation within each group independently for normalization. It is independent of batch size, thus it is frequently used in tasks that prefer small mini-batch size, such as object detection and video classification.
+Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. Unlike batch normalization, layer normalization performs exactly the same computation at training and test times.
+
+Instance normalization~\cite{instance_norm} is similar to layer normalization but goes one step further. It computes the mean and variance for normalization over \emph{each} channel in \emph{each} training example.
+Recent studies show that instance normalization performs well on visual tasks such as style transfer and image translation~\cite{pix2pixhd,spade,cyclegan} when replacing batch normalization in GAN architecture. 
+Nonetheless, instance normalization layers tend to wash away detailed information conveyed by the input sketches, thus it results in descent of the feature expression ability and imprecise control on face generation. 
+
+It is essential to support fine-grained control in sketch-based content creation. 
+We comprehensively investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic face image generation using data visualization methods. 
+We utilize principal component analysis (PCA)~\cite{pca} to visualize and analyze features extracted by the generator from sketches. 
+Consequently, we propose to remove the first two instance normalization layers in the baseline generator, and show that this simple modification in the generator results in a significant improvement on control accuracy in image generation. 
+We conduct extensive experiments and interactive user studies to evaluate our proposed method. The results demonstrate that our method surpasses the baseline method on image quality and control precision on the sketch-to-image task.
+
 
 \section{Feature Embedding Visualization}
+\label{sec:visualize}
+
 We investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic image generation by designing a set of hand-drawn sketches and visualizing the feature embedding.
-In Sec.~\ref{sec:pix2pixhd}, we review our baseline method pix2pixHD.
+\dlt{In Sec.~\ref{sec:pix2pixhd}, we review our baseline method pix2pixHD.
 In Sec.~\ref{sec:visualize}, we visualize the feature embedding from hand-drawn sketches by the generator of pix2pixHD, and analyze the visualization results to investigate the effect of instance normalization. 
 Based on the analysis, we introduce our design on the generator network for sketch-based face generation in Sec.~\ref{sec:network}.
+}
 
-\subsection{The pix2pixHD Baseline}\label{sec:pix2pixhd}
-Pix2pixHD~\cite{pix2pixhd} is an image translation model based on conditional GAN.
-It adopts an improved adversarial loss and the network architecture to generate high-quality and high-resolution images from input semantic label maps. 
-A coarse-to-fine generator and a multiscale discriminator are introduced to increase the image resolution and enhance texture details.
-Using this model, more realistic images in dimension of $2048 \times 1024$ can be generated. 
-%In addition, the model can also be used for interactive image editing.  
-
+%\subsection{The pix2pixHD Baseline}\label{sec:pix2pixhd}
+We employ Pix2pixHD~\cite{pix2pixhd} as our baseline model.
 Its generator $G$ is composed of two sub-networks, a global generator network $G_1$ and a local enhance network $G_2$. 
 $G_1$ is used to generate a base image, then $G_2$ is used to increase the image resolution with texture details. 
-In order to distinguish real and generated images with high resolution, the discriminator requires a larger receptive field. 
-Therefore, pix2pixHD uses a multi-scale discriminator, which is composed of three discriminators $D_1$, $D_2$ and $D_3$ in three scales, to preserve both global and local information. 
+In order to distinguish real and generated images with high resolution, pix2pixHD uses a multi-scale discriminator, which is composed of three discriminators $D_1$, $D_2$ and $D_3$ in three scales, to preserve both global and local information. 
 The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$, and VGG perceptual loss $L_{VGG}(G)$. The full objective is formulated as:
 \begin{equation}
 \begin{split}
@@ -140,7 +122,7 @@ where $\lambda$ controls the importance of the three terms.
 
 Pix2pixHD can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
 We developed an interactive system to support users to create face images by sketching. 
-However, when an user tries to change the shape of a local part, pix2pixHD tends to change the entire image globally, as shown in Fig.~\ref{fig:problem-in}.
+However, when an user changes the shape of a local part, pix2pixHD tends to change the entire image globally, as shown in Fig.~\ref{fig:problem-in}.
 Therefore, we investigate the network architecture and feature embedding through a comprehensive experiment.
 
 \begin{figure}
@@ -151,34 +133,45 @@ Therefore, we investigate the network architecture and feature embedding through
 \end{figure}
 
 
-\begin{figure*}[htbp]
+\begin{figure}[htbp]
 	\centering
-	\includegraphics[width=\textwidth]{hand_drawn_sketches.png}
+	\includegraphics[width=0.5\textwidth]{hand_drawn_sketches.png}
 	\caption{We collect 11 groups of hand-drawn sketches with specific changes at each group. G1: Add hair; G2: Add new attributes, such as whiskers, wrinkles, and ears; G3: Face shape change; G4: Eyebrow change; G5: Eye shape change; G6: Eye size change; G7: Graffiti-drawn; G8: Mouth shape change; G9: Nose shape change; G10: Mouth shape change with the same eyes as G9; G11: Nose shape change with the same eyes as G8. Specifically, there is no correlation between G7 and the other 10 groups. Except G7, in the sketches of other groups, only a particular area or attribute is modified while the rest sketches in this group remain the same. While sketches in G8 and G11 have the same eyes, sketches in G9 and G10 have the same eyes, the eye shapes in other groups are different.}
 	\label{fig:hand_drawn_contours}
-\end{figure*}
-
-\begin{figure}[htbp]
-	\begin{center}
-		%\centering
-		\includegraphics[width=0.2 \textwidth]{receptive_field.png}
-	\end{center}
-	\caption{The receptive fields of corresponding left eye corner points in the feature maps of $L_0\sim L_4$. The smallest purple box corresponds to $L_0$, while the biggest red box corresponds to $L_4$. }
-	\label{fig:receptive}
 \end{figure}
 
+\begin{figure}
+\centering
+\begin{subfigure}[b]{0.2\textwidth}	
+	\centering
+	\includegraphics[width=0.13\textheight]{average_face.png}
+	\caption{ }
+	\label{fig:average_face}
+\end{subfigure}	
+ \hfill
+\begin{subfigure}[b]{0.2\textwidth}
+	\centering
+	\includegraphics[width=0.15\textheight]{receptive_field.png}
+	\caption{ }
+	\label{fig:receptive}
+	\end{subfigure}	
 
+\caption{(a) The average face of all the synthesized contours from the face photos. (b) The receptive fields of corresponding left eye corner points in the feature maps of $L_0\sim L_4$.}
+\end{figure}
 
-\subsection{Feature Visualization}\label{sec:visualize}
+ 
 
+%\subsection{Feature Visualization}\label{sec:visualize}
 
-%We extract the feature vectors of the middle layers of the generator network and utilize data reduction and visualization tool PCA to analyze them comparatively.
-
-In order to analyze how the image translation model extracts the face shape features consistent with the user's intention for the hand-drawn sketches that typically have little details and geometric deformation, we collect 11 groups of sketches with changes in a specific area in each group. It contains 198 sketches totally of resolution $512\times512$. Fig.~\ref{fig:hand_drawn_contours} shows some examples of the 11 groups of sketches. And we refer to the 11 groups as $G1,\ldots,G11$.
+ 
+In order to analyze how the image translation model extracts the face shape features consistent with the user's intention for the hand-drawn sketches that typically contain little details and geometric deformation, we collect 11 groups of sketches with changes in a specific area in each group. It contains 198 sketches of resolution $512\times512$. 
+Note that all synthetic face contours in the training set are global aligned, we compute the average face (Fig.~\ref{fig:average_face}) and show it in the drawing panel as reference when collecting sketches. 
+%
+Fig.~\ref{fig:hand_drawn_contours} shows some examples of the 11 groups of sketches, denoted as $G_1,\ldots,G_{11}$.
 
 We refer to the first five layers of the global generator of pix2pixHD as $L_0,\ldots,L_4$. 
 With a sketch fed into the generator, five groups of feature maps can be obtained from $L_0$ to $L_4$.
-For each point in a layer, we can extract a $k$-dimensional feature vector, where $k$ is the channel number of the feature maps in one layer.
+For each point in a layer, we can extract a $k$-dimensional feature vector, where $k$ is the channel number of the feature maps in that layer.
 We select the corner of the left eye for visual analysis. 
 The five feature vectors are denoted as $\boldsymbol{v}_0,\boldsymbol{v}_1,\boldsymbol{v}_2,\boldsymbol{v}_3,\boldsymbol{v}_4$ in dimensions of 48, 96, 192, 384 and 768, respectively. 
 %The coordinates of the corresponding points on the five feature maps are (170, 250), (85, 125), (43, 63), (22, 32) and (11, 16). 
@@ -189,19 +182,15 @@ The receptive fields of the five vectors are $7\times7$, $9\times9$, $13\times13
 
 
 %\paragraph{Visualization with PCA.} 
-\noindent
-\textbf{Visualization with PCA.} 
+%\noindent\textbf{Visualization with PCA.} 
 Principal component analysis~(PCA)~\cite{pca} is a widely-used dimension reduction method and retains the statistic characteristics of data in high dimensional space. 
 We employ PCA on $\boldsymbol{v}_0,\ldots, \boldsymbol{v}_4$ to map the high-dimensional vectors into 2D vectors and plot them in a 2D space. 
 Fig.~\ref{fig:pca_0} show the visualization results with PCA on $\boldsymbol{v}_0,\ldots,\boldsymbol{v}_4$. 
 %
 In group 1, all the sketches share the same eye shape but with different hair styles. They are supposed to have the same feature embedding for the left eye corner at the early convolutional layers. However, as shown in Fig.~\ref{fig:pca_0}, the feature vectors scatter across a wide range (red numbers). 
-Similarly, though the eye strokes do not change in the sketches of the same group, the feature embedding of G2 (orange), G3 (lime), G4 (blue), G8 (olive), G9 (green), G10 (purple) and G11 (teal) scatter.
-%
-%G8 and G11 scatter within group among a same area, so do the data of G9 and G10, whereas the data of G5, G6 and G7 dispersed globally.
-%\cxj{It is hard to follow here.}
+Similarly, though the eye strokes do not change in the sketches of the same group, the feature embedding of $G_2$ (orange), $G_3$ (lime), $G_4$ (blue), $G_8$ (olive), $G_9$ (green), $G_{10}$ (purple) and $G_{11}$ (teal) scatter.
 This phenomenon indicates that the instance normalization in each layer takes the sketch information outside of its corresponding receptive field into account and then affects the feature embedding of a local region. 
-By comparing visualization results of $\boldsymbol{v}_0\sim\boldsymbol{v}_4$ comprehensively, we find out that the feature vectors belonging to the groups without eye changes, such as G1, G2, G3, G4, G8, G9, G10, and G11, distribute more and more dispersedly within each group from layer 1 to layer 4, indicating that with more instance normalization, changing other parts on the input sketch has more and more influence on the local feature embedding, resulting in an awful change of eyes in the generated images.
+By comparing visualization results of $\boldsymbol{v}_0\sim\boldsymbol{v}_4$ comprehensively, we find out that the feature vectors belonging to the groups without eye changes, such as $G_1$, $G_2$, $G_3$, $G_4$, $G_8$, $G_9$, $G_{10}$, and $G_{11}$, distribute more and more dispersedly within each group from layer 1 to layer 4, indicating that with more instance normalization, changing other parts on the input sketch has more and more influence on the local feature embedding, resulting in an awful change of eyes in the generated images.
 Consequently, we modify the normalization in the generator of pix2pixHD to keep local shape details. 
 
 \begin{figure*}[htb]
@@ -214,22 +203,23 @@ Consequently, we modify the normalization in the generator of pix2pixHD to keep 
 \begin{figure*}[htb]
 	\centering
 	\includegraphics[width=0.9 \textwidth]{pca_1.png}
-	\caption{Visualization of feature embedding $\boldsymbol{v}_0^{'}\sim\boldsymbol{v}_4^{'}$ in the first five layers of our generator for the left eye corner for 11 groups of sketches.}
+	\caption{Visualization of  $\boldsymbol{v}_0^{'}\sim\boldsymbol{v}_4^{'}$ in the first five layers of our generator for the left eye corner for 11 groups of sketches.}
 	\label{fig:pca_1}
 \end{figure*}
 
 
 \section{Our Network Design}\label{sec:network}
 %
+ 
 With instance normalization in the baseline generator, the activation of convolutional output is normalized in a channel-wise manner and then modulated with unified scale and bias within each channel. 
 This operation, to a certain extent, leads to a negative effect that a local change in the input sketch broadcasts globally, resulting in a degraded capacity of fine-grained control on the generated images.
 However, the vanishing gradient or exploding gradient problem is bound to emerge when the instance normalization layers in the feature embedding stage of the generator is abandoned, making the training process difficult to converge. 
-
+ 
 Based on the consideration above, we only remove the first two instance normalization layers in the global generator of pix2pixHD and keep the rest the same as pix2pixHD. 
 The architecture of our generator is shown in Fig.~\ref{fig:our_generator}. 
 %It operates at a resolution of 512×512. 
 It consists of four components: a convolutional front-end without normalization $G_F$, a down-sampled convolutional mid-end $G_M$, a set of residual blocks $G_R$, and a transposed convolutional back-end $G_B$.  
-$G_F$, which is composed of two unnormalized convolution and activation layers, embeds local shape information of the input sketch.
+$G_F$, which is composed of two un-normalized convolution and activation layers, embeds local shape information of the input sketch.
 In other words, the local shape information of the sketch can flow through the network without spatially broadcasting, thus effectively supports fine-grained control on generated images. 
 
 \begin{figure}[htbp]
@@ -239,10 +229,11 @@ In other words, the local shape information of the sketch can flow through the n
 	\label{fig:our_generator}
 \end{figure}
 
+\dlt{
 We use the same three-scale discriminator with pix2pixHD. 
 Each discriminator is built on the PatchGAN~\cite{pix2pix} architecture. 
 At each scale, the input sketch is concatenated with the corresponding face images, resized and fed into the corresponding discriminator.
-
+}
 
 To evaluate the superiority of our proposed method at the level of feature embedding, we conducted the visual analysis in the same way as described in Sec.~\ref{sec:visualize}.
 We refer to the five feature vectors in our generator as $\boldsymbol{v}_0^{'},\boldsymbol{v}_1^{'},\boldsymbol{v}_2^{'},\boldsymbol{v}_3^{'},\boldsymbol{v}_4^{'}$.
@@ -269,7 +260,7 @@ The improvement on generator network can effectively alleviate the issue that ch
 Therefore, our network better supports fine-grained control and enhances texture details on the generated images.
 
 
-\section{Experiments on Sketch-based Face Generation}
+\section{Results and Discussion}
 
 To evaluate the effectiveness of our method on interactive face synthesis by sketching, we conducted extensive experiments with a wide range of handdrawn sketches and local editing. 
 We develop an interactive interface for drawing sketches and displaying the generated photos in real time.
@@ -281,7 +272,7 @@ We develop an interactive interface for drawing sketches and displaying the gene
 
 %\paragraph{Datasets.}
 \noindent
-Datasets.
+\textbf{Datasets.}
 CelebA-HQ dataset contains 30k face images in resolution $1024\times1024$. All the face images are cropped and globally aligned according to face landmarks.
 To produce paired training data of sketches and face images, we extracted 68 landmarks from each face image in the CelebA-HQ dataset, connect these landmark points in sequence, and draw lines in width of two pixels to synthesize contours as sketches.
 %As the face photos in Celeba-HQ dataset are global aligned, so are the contours.
@@ -289,24 +280,17 @@ Those contours are more simple and clean than other types of synthetic sketches 
 In our experiments, all the synthetic contour images and face images are resized into $512\times512$. 
 After removing the photos for which landmark extraction fails, the training set contains 14,973 pairs of contour image and face photo, while the test set contains 4,992 pairs of contour and face photo. 
 
-\subsection{Data Augmentation}\label{sec:augmentation} 
-The face photos of the CalebA-HQ dataset are precisely aligned based on facial landmarks. Fig.~\ref{fig:average_face} shows an average face of all the synthesized contours. 
-It shows that the facial features and facial contours of training data are basically in the same position, in other words, the training data is global aligned. 
+%\subsection{Data Augmentation}\label{sec:augmentation} 
+The face photos of the CalebA-HQ dataset are precisely aligned based on facial landmarks. 
+%Fig.~\ref{fig:average_face} shows an average face of all the synthesized contours. It shows that the facial features and facial contours of training data are basically in the same position, in other words, the training data is global aligned. 
 This issue leads to degraded generalization ability of the model.
-
-\begin{figure}[htb]
-	\centering
-	\includegraphics[width=0.18 \textwidth]{average_face.png}
-	\caption{The average face of all the synthesized contours from the face photos. }
-	\label{fig:average_face}
-\end{figure}
-
+%
 In order to imitate the human hand-drawn sketches, we apply random translation and rotation to the training contour images. 
 Specifically, offsets randomly selected from $[-d,d]^2$ and angles randomly selected from $[-\theta,\theta]$ are applied to the training contours, where $d$ is the maximum offset and $\theta$ is the maximum angle.
 We set $d=25$ and $\theta=7^\circ$ in our experiments. 
 However, the training face photos are not translated or rotated because we expect the generated images to remain global aligned regardless of the spatial location of the input sketches.
 Fig.~\ref{fig:data_augmentation} illustrates the comparative results between images generated before data augmentation and that after data augmentation. 
-The quality of generated images after data augmentation is greatly improved compared with those results without data augmentation when the input sketches deviate from the training examples spatially.
+The quality of generated images after data augmentation is greatly improved compared when the input sketches deviate from the training examples spatially.
 
 \begin{figure}[htb]
 	\centering
@@ -317,9 +301,10 @@ The quality of generated images after data augmentation is greatly improved comp
 
 
 \subsection{Qualitative Comparisons}\label{sec:results}
-We conduct extensive experiments on different model with groups of elaborated hand-drawn sketches to verify the effect of instance normalization in generator on sketch-based face photo generation.
+We conduct extensive experiments on different models with groups of elaborated hand-drawn sketches to verify the effect of instance normalization in generator on sketch-based face photo generation.
 
-To further explore how the amount of instance normalization layers in generator network affect the sketch-based face image generation quality, we train another model which takes the generator of pix2pixHD got rid of the first five instance normalization layers as its own generator. 
+
+To explore how the amount of instance normalization layers in generator network affect the sketch-based face image generation quality, we train another model which takes the generator of pix2pixHD got rid of the first five instance normalization layers as its own generator. 
 This model is refered to as $M_1$ for convenience.
 We compare the face images generated by our model, $M_1$ and pix2pixHD. 
 As you can see in Fig.~\ref{fig:ablation}, our model generates the most photorealistic images in contrast to the $M_1$ model which generates images lacking realism. 
@@ -328,7 +313,7 @@ So it's reasonable for our model just to remove the first two instance normaliza
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=\columnwidth ]{ablation.png}
-	\caption{Comparison between results generated by different models with different amount of instance normalization layers. }
+	\caption{Comparison of results generated using different amount of instance normalization layers. }
 	\label{fig:ablation}
 \end{figure}  
 
