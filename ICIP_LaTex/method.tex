@@ -3,8 +3,8 @@
 
 We investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic image generation by designing a set of hand-drawn sketches and visualizing the feature embedding.
 \dlt{In Sec.~\ref{sec:pix2pixhd}, we review our baseline method pix2pixHD.
-In Sec.~\ref{sec:visualize}, we visualize the feature embedding from hand-drawn sketches by the generator of pix2pixHD, and analyze the visualization results to investigate the effect of instance normalization. 
-Based on the analysis, we introduce our design on the generator network for sketch-based face generation in Sec.~\ref{sec:network}.
+	In Sec.~\ref{sec:visualize}, we visualize the feature embedding from hand-drawn sketches by the generator of pix2pixHD, and analyze the visualization results to investigate the effect of instance normalization. 
+	Based on the analysis, we introduce our design on the generator network for sketch-based face generation in Sec.~\ref{sec:network}.
 }
 %\subsection{The pix2pixHD Baseline}\label{sec:pix2pixhd}
 We employ Pix2pixHD~\cite{pix2pixhd} as our baseline model.
@@ -13,14 +13,14 @@ $G_1$ is used to generate a base image, then $G_2$ is used to increase the image
 In order to distinguish real and generated images with high resolution, pix2pixHD uses a multi-scale discriminator, which is composed of three discriminators $D_1$, $D_2$, and $D_3$ in three scales, to preserve both global and local information. 
 The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$, and VGG perceptual loss $L_{VGG}(G)$. 
 \dlt{The full objective is:
-\begin{equation}
-\begin{split}
-&\underset{G}{\min}\Bigg(\bigg(\underset{D_1,D_2,D_3}{\max} \sum_{k=1,2,3}{L_{GAN}\big(G,D_k\big)}\bigg)+  \\
-&\lambda \bigg(\frac{1}{3}\sum_{k=1,2,3}{L_{FM}\big(G,D_k\big)}+L_{VGG}{\big(G\big)}\bigg)\Bigg),
-\end{split}
-\end{equation}
-\noindent
-where $\lambda$ balances the three loss terms.
+	\begin{equation}
+	\begin{split}
+	&\underset{G}{\min}\Bigg(\bigg(\underset{D_1,D_2,D_3}{\max} \sum_{k=1,2,3}{L_{GAN}\big(G,D_k\big)}\bigg)+  \\
+	&\lambda \bigg(\frac{1}{3}\sum_{k=1,2,3}{L_{FM}\big(G,D_k\big)}+L_{VGG}{\big(G\big)}\bigg)\Bigg),
+	\end{split}
+	\end{equation}
+	\noindent
+	where $\lambda$ balances the three loss terms.
 }
 
 Pix2pixHD can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
@@ -38,16 +38,16 @@ Therefore, we investigate the network architecture and feature embedding through
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{0.15\textwidth}	
+	\begin{subfigure}[b]{0.23\textwidth}	
 		\centering
-		\includegraphics[width=0.1\textheight]{average_face.png}
+		\includegraphics[width=0.09\textheight]{average_face.png}
 		\caption{ }
 		\label{fig:average_face}
 	\end{subfigure}	
 	\hfill
-	\begin{subfigure}[b]{0.15\textwidth}
+	\begin{subfigure}[b]{0.23\textwidth}
 		\centering
-		\includegraphics[width=0.11\textheight]{receptive_field.png}
+		\includegraphics[width=0.1\textheight]{receptive_field.png}
 		\caption{ }
 		\label{fig:receptive}
 	\end{subfigure}	
@@ -61,7 +61,7 @@ Therefore, we investigate the network architecture and feature embedding through
 
 %\subsection{Feature Visualization}\label{sec:visualize}
 
- 
+
 In order to analyze how the image translation model extracts the face shape features consistent with the user's intention for the hand-drawn sketches that typically contain little details and geometric deformation, we collect 11 groups of sketches with changes in a specific area in each group. It contains 198 sketches of resolution $512\times512$. 
 Note that all synthetic face contours in the training set are globally aligned.
 We compute an average face (Fig.~\ref{fig:average_face}) and show it in the drawing panel as reference when collecting sketches. 
@@ -120,11 +120,11 @@ Consequently, we modify the normalization in the generator of pix2pixHD to keep 
 
 \section{Our Network Design}\label{sec:network}
 %
- 
+
 With instance normalization in the baseline generator, the activation of convolutional output is normalized in a channel-wise manner and then modulated with unified scale and bias within each channel. 
 This operation, to a certain extent, leads to a negative effect that a local change in the input sketch broadcasts globally, resulting in a degraded capacity of fine-grained control on the generated images.
 However, the vanishing gradient or exploding gradient problem is bound to emerge when the instance normalization layers in the feature embedding stage of the generator is abandoned, making the training process difficult to converge. 
- 
+
 Based on the consideration above, we only remove the first two instance normalization layers in the global generator of pix2pixHD and keep the rest the same as pix2pixHD. 
 The architecture of our generator is shown in Fig.~\ref{fig:our_generator}. 
 %It operates at a resolution of 512×512. 
@@ -140,9 +140,9 @@ In other words, the local shape information of the sketch can flow through the n
 \end{figure}
 
 \dlt{
-We use the same three-scale discriminator with pix2pixHD. 
-Each discriminator is built on the PatchGAN~\cite{pix2pix} architecture. 
-At each scale, the input sketch is concatenated with the corresponding face images, resized and fed into the corresponding discriminator.
+	We use the same three-scale discriminator with pix2pixHD. 
+	Each discriminator is built on the PatchGAN~\cite{pix2pix} architecture. 
+	At each scale, the input sketch is concatenated with the corresponding face images, resized and fed into the corresponding discriminator.
 }
 
 %To evaluate the superiority of our proposed method at the level of feature embedding, we conducted the visual analysis in the same way as described in Sec.~\ref{sec:visualize}.
@@ -163,8 +163,8 @@ On the contrary, the feature vectors from $G_5$, $G_6$, and $G_7$ distribute dis
 
 We visualize the feature embedding of $\boldsymbol{v}_2^{'},\boldsymbol{v}^{'}_3, \boldsymbol{v}_4^{'}$ in Fig.~\ref{fig:pca_1} (c) (d) (e). 
 Compare with the PCA visualization results of $\boldsymbol{v}_2,\boldsymbol{v}_3,\boldsymbol{v}_4$ in 
-Fig.~\ref{fig:pca_0} (c) (d) (e), the $\boldsymbol{v}_2, \boldsymbol{v}_3, \boldsymbol{v}_4$ belonging to groups without eye shape change, such as $G_1$, $G_2$, $G_3$, $G_4$, $G_8$, $G_9$, $G_{10}$, and $G_{11}$, have a bigger in-class distance compared with $\boldsymbol{v}_2^{'}, \boldsymbol{v}_3^{'}, \boldsymbol{v}_4^{'}$. 
-This indicates that the removal of the first two instance normalization layers in pix2pixHD generator can better extract the low-level features of the input sketch and keep local shape information. 
+Fig.~\ref{fig:pca_0} (c) (d) (e), the $\boldsymbol{v}_2, \boldsymbol{v}_3, \boldsymbol{v}_4$ belonging to groups with unchanged eyes, such as $G_1$, $G_2$, $G_3$, $G_4$, $G_8$, $G_9$, $G_{10}$, and $G_{11}$, have a bigger intra-class distance compared with $\boldsymbol{v}_2^{'}, \boldsymbol{v}_3^{'}, \boldsymbol{v}_4^{'}$. 
+This indicates that without the first two instance normalization layers, generator can better extract the low-level features of the input sketch and keep local shape information. 
 %The improvement on generator network can effectively alleviate the issue that changing one part of the sketch influences the other parts of the generated image. 
 Therefore, our network better supports fine-grained control and enhances texture details on the generated images.
 
