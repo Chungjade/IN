@@ -67,14 +67,15 @@ Sketch, face generation, instance normalization, fine-grained control, GAN
 \section{Introduction}
 \label{sec:intro}
 
-Photorealistic face image synthesis from hand-drawn sketches using generative adversarial networks~(GANs)~\cite{gan} has drawn a lot of attention in computer graphics and computer vision recently. Considering hand-drawn sketches as one specific type of images, generating face images from sketches can be formulated as an image-to-image translation problem, which generates corresponding image in one domain from an image in another domain while the two images share the same structure~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
+Photorealistic face image synthesis from hand-drawn sketches using generative adversarial networks~(GANs)~\cite{gan} has drawn a lot of attention in computer graphics and computer vision recently. Considering hand-drawn sketches as one specific type of images, generating face images from sketches can be formulated as an image-to-image translation problem, which generates corresponding image in one domain from an image in another domain while the two images share the same structure~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,maskgan}.
 The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix} and was applied to a variety of image translation scenarios, such as label maps to streetscapes, edge maps to photos, image colorization, and so on.
 %However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. 
 In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to generate images from semantic label maps by a coarse-to-fine generator and a multiscale discriminator. 
 However, the instance normalization layers used in pix2pixHD tend to wash away semantic information.
 In order to efficiently preserve and propagate semantic information throughout the network, GauGAN~\cite{spade} utilizes semantic segmentation masks to modulate activations in the normalization layers through a spatially-adaptive and learned transformation. 
 %
-These models can also be applied to edge-to-photo generation when conditioned on edge maps and photo pairs \cite{} \cxj{Add references here}. 
+These models can also be applied to edge-to-photo generation when conditioned on edge maps and photo pairs.
+%\cite{} \cxj{Add references here}. 
 
 However, the large gap between synthesized edge maps and hand-drawn sketches challenges the generalization ability of these models.
 %It inspires us to investigate the effect of normalization layers more deeply on information propagation in the network architecture for sketch-based face image synthesis.
