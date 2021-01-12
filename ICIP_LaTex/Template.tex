@@ -51,13 +51,13 @@
 \maketitle
 %
 \begin{abstract}
-Sketching is an intuitive and effective way for content creation. While significant progress has been made for photorealistic image generation by using generative adversarial networks, it remains challenging to take a fine-grained control on synthetic content.  
-The instance normalization layer, which is widely adopted in existing image translation networks, washes away details in the input sketch and leads to loss of precise control on the desired shape of the generated face images.
+Sketching is an intuitive and effective way for content creation. While significant progress has been made for photorealistic image generation by using generative adversarial networks, it remains challenging to make fine-grained controls on the synthetic content. 
+%Instance normalization, which is widely adopted in image translation networks, washes away details in the input sketch and leads to loss of precise control on the desired shape of the generated face images.
 In this paper, we comprehensively investigate the effect of instance normalization on generating photorealistic face images from hand-drawn sketches.
-We first introduce a visualization approach to analyze the feature embedding for sketches with a group of specific changes.  
-Based on the visual analysis, we modify the instance normalization layers in the baseline image translation model. 
-We elaborate a new set of hand-drawn sketches with 11 categories of specially designed changes and conduct extensive experimental analysis.  
-The results and user studies demonstrate that our method markedly improves the quality of synthesized images and the conformance with user intention.
+We first introduce a visualization pipeline to analyze the feature embedding for sketches with a group of specific changes.  
+Based on the visual analysis, we modify the instance normalization layers in the baseline model. 
+We elaborate a new set of hand-drawn sketches with 11 categories of specially designed changes and conduct extensive experimental analysis.  The results and user studies demonstrate that our method markedly improves the quality of synthesized images and the conformance with user intention.
+
 \end{abstract}
 %
 \begin{keywords}
