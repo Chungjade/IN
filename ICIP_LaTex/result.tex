@@ -81,13 +81,13 @@ In contrast, the blurry artifacts are alleviated obviously in our results when t
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.4 \textwidth]{mouth_editing.png}
-	\caption{Comparison between our model and baseline model tested with mouth-altered sketches. }
+	\includegraphics[width=0.32 \textwidth]{mouth_editing.png}
+	\caption{Comparison between our model and baseline model tested with mouth-altered sketches.}
 	\label{fig:compare_2}
 \end{figure}
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.45 \textwidth]{nose_editing.png}
+	\includegraphics[width=0.4 \textwidth]{nose_editing.png}
 	\caption{Comparison between our model and baseline model when the input sketches change locally at the nose shape.}
 	\label{fig:compare_3}
 \end{figure}
@@ -121,4 +121,5 @@ We collect 11 groups of sketches with specific designs and utilize PCA to visual
 The analysis indicates that the instance normalization tends to wash away the local shape information in the input sketches.
 We improve the baseline image translation model by modifying the instance normalization layers in its generator.
 The modified model effectively conveys fine-grained shape information and produces photorealistic face images that conforms with the input sketches on both local shape and global structure.
-Extensive experiments demonstrate the effectiveness of our proposed method on the image quality and conformance with user intention in a sketch-based face image generation system.  
+Extensive experiments demonstrate the effectiveness of our proposed method on the image quality and conformance with user intention.
+%in a sketch-based face image generation system.  
