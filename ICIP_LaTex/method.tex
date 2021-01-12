@@ -11,7 +11,8 @@ We employ Pix2pixHD~\cite{pix2pixhd} as our baseline model.
 Its generator $G$ is composed of two sub-networks, a global generator network $G_1$ and a local enhance network $G_2$. 
 $G_1$ is used to generate a base image, then $G_2$ is used to increase the image resolution with texture details. 
 In order to distinguish real and generated images with high resolution, pix2pixHD uses a multi-scale discriminator, which is composed of three discriminators $D_1$, $D_2$, and $D_3$ in three scales, to preserve both global and local information. 
-The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$, and VGG perceptual loss $L_{VGG}(G)$. The full objective is:
+The loss function of this model is composed of three parts: adversarial loss $L_{GAN}(G,D_k)$, feature matching loss $L_{FM}(G,D_k)$, and VGG perceptual loss $L_{VGG}(G)$. 
+\dlt{The full objective is:
 \begin{equation}
 \begin{split}
 &\underset{G}{\min}\Bigg(\bigg(\underset{D_1,D_2,D_3}{\max} \sum_{k=1,2,3}{L_{GAN}\big(G,D_k\big)}\bigg)+  \\
@@ -20,7 +21,7 @@ The loss function of this model is composed of three parts: adversarial loss $L_
 \end{equation}
 \noindent
 where $\lambda$ balances the three loss terms.
-
+}
 
 Pix2pixHD can be applied to sketch-based face generation when trained using pairs of synthesized contours and photos. 
 We developed an interactive system to support users to create face images by sketching. 
@@ -37,16 +38,16 @@ Therefore, we investigate the network architecture and feature embedding through
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{0.2\textwidth}	
+	\begin{subfigure}[b]{0.15\textwidth}	
 		\centering
-		\includegraphics[width=0.13\textheight]{average_face.png}
+		\includegraphics[width=0.1\textheight]{average_face.png}
 		\caption{ }
 		\label{fig:average_face}
 	\end{subfigure}	
 	\hfill
-	\begin{subfigure}[b]{0.2\textwidth}
+	\begin{subfigure}[b]{0.15\textwidth}
 		\centering
-		\includegraphics[width=0.15\textheight]{receptive_field.png}
+		\includegraphics[width=0.11\textheight]{receptive_field.png}
 		\caption{ }
 		\label{fig:receptive}
 	\end{subfigure}	
@@ -94,7 +95,8 @@ Consequently, we modify the normalization in the generator of pix2pixHD to keep 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.5\textwidth]{hand_drawn_sketches.png}
-	\caption{11 groups of hand-drawn sketches with specific changes at each group. $G_1$: Add hair; $G_2$: Add new attributes, such as whiskers, wrinkles, and ears; $G_3$: Face shape change; $G_4$: Eyebrow change; $G_5$: Eye shape change; $G_6$: Eye size change; $G_7$: Graffiti-drawn; $G_8$: Mouth shape change; $G_9$: Nose shape change; $G_{10}$: Mouth shape change with the same eyes as $G_{9}$; $G_{11}$: Nose shape change with the same eyes as $G_{8}$. The second row lists the number of sketches in each group.
+	\caption{11 groups of hand-drawn sketches with specific changes at each group. 
+		%$G_1$: Add hair; $G_2$: Add new attributes, such as whiskers, wrinkles, and ears; $G_3$: Face shape change; $G_4$: Eyebrow change; $G_5$: Eye shape change; $G_6$: Eye size change; $G_7$: Graffiti-drawn; $G_8$: Mouth shape change; $G_9$: Nose shape change; $G_{10}$: Mouth shape change with the same eyes as $G_{9}$; $G_{11}$: Nose shape change with the same eyes as $G_{8}$. The second row lists the number of sketches in each group.
 		%Specifically, there is no correlation between G7 and the other 10 groups. Except G7, in the sketches of other groups, only a particular area or attribute is modified while the rest sketches in this group remain the same. While sketches in G8 and G11 have the same eyes, sketches in G9 and G10 have the same eyes, the eye shapes in other groups are different.
 	}
 	\label{fig:hand_drawn_contours}
