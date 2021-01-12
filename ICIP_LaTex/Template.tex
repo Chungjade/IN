@@ -6,9 +6,10 @@
 \usepackage{spconf,amsmath,graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{color}
 
 \newcommand{\dlt}[1]{{}}
-
+\newcommand{\cxj}[1]{\textcolor{red}{(Cxj: #1)}}
 % Example definitions.
 % --------------------
 \def\x{{\mathbf x}}
@@ -66,33 +67,35 @@ Sketch, face generation, instance normalization, fine-grained control, GAN
 \section{Introduction}
 \label{sec:intro}
 
-Photorealistic face image synthesis from hand-drawn sketches has drawn a lot of attention in computer graphics and computer vision recently. Typical approaches use generative and adversarial networks~(GANs)~\cite{gan}. 
-Considering hand-drawn sketches as one specific type of images, generating face images from sketches can be formulated as an image-to-image translation problem, which generates corresponding image in one domain according to the input image in another domain while the two images share the same structure~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
-The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix}, derived from generative adversarial networks while conditioned on images. This model can be applied to a variety of image translation scenarios, such as lable maps to streetscapes, edge maps to photos, image colorization, and so on.
-However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to generate images from semantic lable maps by a coarse-to-fine generator and a multiscale discriminator. 
+Photorealistic face image synthesis from hand-drawn sketches using generative adversarial networks~(GANs)~\cite{gan} has drawn a lot of attention in computer graphics and computer vision recently. Considering hand-drawn sketches as one specific type of images, generating face images from sketches can be formulated as an image-to-image translation problem, which generates corresponding image in one domain from an image in another domain while the two images share the same structure~\cite{cyclegan,bicyclegan,spagan,munit,crn,cfgan,sis,cfgan,maskgan}.
+The concept of image-to-image translation was first proposed by pix2pix~\cite{pix2pix} and was applied to a variety of image translation scenarios, such as label maps to streetscapes, edge maps to photos, image colorization, and so on.
+%However, the original pix2pix model has limits of low resolution images, at most $256 \times 256$. 
+In order to improve the resolution of synthesized images, a subsequent model, pix2pixHD~\cite{pix2pixhd}, is proposed to generate images from semantic label maps by a coarse-to-fine generator and a multiscale discriminator. 
 However, the instance normalization layers used in pix2pixHD tend to wash away semantic information.
 In order to efficiently preserve and propagate semantic information throughout the network, GauGAN~\cite{spade} utilizes semantic segmentation masks to modulate activations in the normalization layers through a spatially-adaptive and learned transformation. 
 %
-These models can also be applied to edge-to-photo generation when conditioned on edge map and photo pairs. 
+These models can also be applied to edge-to-photo generation when conditioned on edge maps and photo pairs \cite{} \cxj{Add references here}. 
+
 However, the large gap between synthesized edge maps and hand-drawn sketches challenges the generalization ability of these models.
-%
-It inspires us to investigate the effect of normalization layers more deeply on information propagation in the network architecture for sketch-based face image synthesis.
+%It inspires us to investigate the effect of normalization layers more deeply on information propagation in the network architecture for sketch-based face image synthesis.
 
 
-In various GANs, normalization layers play an important role for stabilizing the training process. Many normalization layers have been developed, such as batch normalization~\cite{bn}, group normalization~\cite{gn}, layer normalization~\cite{ln}, and instance normalization~\cite{instance_norm}. 
+In various GANs, normalization layers play an important role for stabilizing the training process. 
+%Many normalization layers have been developed, such as batch normalization~\cite{bn}, group normalization~\cite{gn}, layer normalization~\cite{ln}, and instance normalization~\cite{instance_norm}. 
 Batch normalization~\cite{bn} eliminates the influence of internal covariate shift and effectively speeds up the training time. 
-Group normalization~\cite{gn} organizes the channels of a layer into different groups, and computes the mean and standard deviation within each group independently for normalization. It is independent of batch size, thus it is frequently used in tasks that prefer small mini-batch size, such as object detection and video classification.
-Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. Unlike batch normalization, layer normalization performs exactly the same computation at training and test times.
-
+Group normalization~\cite{gn} organizes the channels of a layer into different groups, and computes the mean and standard deviation within each group independently for normalization. It is independent of batch size thus frequently used in tasks that prefer small mini-batch size, such as object detection and video classification.
+Layer normalization~\cite{ln} computes the mean and variance used for normalization over all the channels of a single layer. It is more suitable for recurrent neural networks. 
+%Layer normalization performs exactly the same computation at training and test times.
 Instance normalization~\cite{instance_norm} is similar to layer normalization but goes one step further. It computes the mean and variance for normalization over \emph{each} channel in \emph{each} training example.
-Recent studies show that instance normalization performs well on visual tasks such as style transfer and image translation~\cite{pix2pixhd,spade,cyclegan} when replacing batch normalization in GAN architecture. 
+Recent studies show that instance normalization performs well on visual tasks such as style transfer and image translation~\cite{pix2pixhd,spade,cyclegan} when replacing the batch normalization in GAN architecture. 
 Nonetheless, instance normalization layers tend to wash away detailed information conveyed by the input sketches, thus it results in descent of the feature expression ability and imprecise control on face generation. 
-
+ 
 It is essential to support fine-grained control in sketch-based content creation. 
-We comprehensively investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic face image generation using data visualization methods. 
-We utilize principal component analysis (PCA)~\cite{pca} to visualize and analyze features extracted by the generator from sketches. 
-Consequently, we propose to remove the first two instance normalization layers in the baseline generator, and show that this simple modification in the generator results in a significant improvement on control accuracy in image generation. 
-We conduct extensive experiments and interactive user studies to evaluate our proposed method. The results demonstrate that our method surpasses the baseline method on image quality and control precision on the sketch-to-image task.
+We comprehensively investigate the effect of instance normalization on fine-grained control in sketch-based photorealistic face image generation. 
+We utilize principal component analysis (PCA)~\cite{pca} to visualize and analyze features extracted from sketches by the generator. 
+Consequently, we propose to remove the first two instance normalization layers in the baseline generator.
+% and show that this simple modification in the generator results in a significant improvement on fine-grained control in image generation. 
+We conduct extensive experiments and user studies to evaluate our proposed method. The results demonstrate that our method surpasses the baseline method on image quality and control precision on the sketch-to-image task.
 
 
 \section{Feature Embedding Visualization}
